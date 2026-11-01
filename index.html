@@ -3,103 +3,69 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1267d6">
-<title>Quét mã đơn hàng - v1.3</title>
+<title>Quét mã đơn hàng v1.4</title>
 <style>
-:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f2f5fa;font-synthesis:none}
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f2f5fa}
 *{box-sizing:border-box}
-body{margin:0;padding:16px}
-.app{max-width:720px;margin:0 auto}
-.header{display:flex;align-items:center;gap:12px;margin:6px 0 16px}
-.logo{width:46px;height:46px;border-radius:14px;background:#1267d6;color:#fff;display:grid;place-items:center;font-size:27px;font-weight:bold}
-.header h1{font-size:20px;margin:0}
-.header p{font-size:13px;color:#69758a;margin:5px 0 0}
-.panel{background:#fff;border-radius:18px;padding:16px;box-shadow:0 5px 24px #1c315012}
-.headrow,.listhead{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.headrow h2,.listhead h2{font-size:17px;margin:0}
-.muted{font-size:13px;color:#738097;margin:6px 0 0}
-.pill{font-size:12px;border-radius:30px;padding:7px 10px;background:#edf1f7;color:#596579}
+body{margin:0;padding:12px}
+.app{max-width:720px;margin:auto}
+.header{display:flex;align-items:center;gap:12px;margin:8px 0 16px}
+.logo{width:46px;height:46px;border-radius:14px;background:#1267d6;color:#fff;display:grid;place-items:center;font-size:28px;font-weight:bold}
+h1{font-size:20px;margin:0}.header p,.muted{font-size:13px;color:#738097;margin:5px 0}
+.panel{background:#fff;border-radius:16px;padding:15px;box-shadow:0 4px 18px #0000000d}
+.headrow,.listhead,.resultbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h2{font-size:17px;margin:0}
+.pill,.count{font-size:12px;padding:7px 10px;border-radius:20px;background:#edf1f7;color:#596579;flex-shrink:0}
 .pill.live{background:#e1f7e9;color:#16723a}
-.scanbox{position:relative;margin-top:15px;background:#101827;border-radius:14px;overflow:hidden;min-height:250px;display:grid;place-items:center}
-.scanbox video{display:block;width:100%;max-height:440px;object-fit:contain;background:#101827}
-.placeholder{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:9px;color:#d9e2f1;text-align:center;padding:20px}
-.placeholder .cam{font-size:44px}
-.placeholder small{color:#aab8ce}
+.scanbox{position:relative;isolation:isolate;margin-top:14px;background:#101827;border-radius:12px;overflow:hidden;min-height:240px;aspect-ratio:4/3;max-height:480px}
+#camera{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#101827}
+#fallbackReader{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+#fallbackReader video{width:100%!important;height:100%!important;object-fit:contain!important}
+#fallbackReader canvas{display:none!important}
+#scanOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
+.placeholder{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;text-align:center;padding:20px;pointer-events:none}
+.placeholder .cam{font-size:44px}.placeholder small{color:#aab8ce}
 .hidden{display:none!important}
-.controls{display:flex;gap:9px;margin-top:13px}
-.btn{border:0;border-radius:11px;padding:13px 15px;font-size:15px;font-weight:700;cursor:pointer;min-height:46px}
-.primary{background:#1267d6;color:#fff;flex:1}
-.secondary{background:#eef2f8;color:#344054}
-.danger{background:#fff0f0;color:#b42318}
-.finish{background:#168344;color:#fff;flex:1}
+.live-code{margin-top:9px;min-height:40px;padding:10px 12px;border:1px solid #b8ebc8;background:#effbf2;border-radius:10px;color:#11743a;font-size:13px;font-weight:700;overflow-wrap:anywhere}
+.controls,.actions{display:flex;gap:9px;margin-top:12px}
+.btn{border:0;border-radius:10px;padding:13px 12px;font-size:14px;font-weight:bold;cursor:pointer;min-height:45px}
+.primary{background:#1267d6;color:#fff;flex:1}.secondary{background:#eef2f8;color:#344054}.danger{background:#fff0f0;color:#b42318}.finish{background:#168344;color:#fff;flex:1}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.feedback{margin-top:13px;padding:13px;border-radius:11px;font-size:14px;line-height:1.4;background:#f0f4fa;color:#344054;overflow-wrap:anywhere}
-.feedback.success{background:#e7f8ed;color:#126b35}
-.feedback.duplicate,.feedback.error{background:#fff0f0;color:#b42318}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
-.stat{background:#f4f6fa;border-radius:12px;padding:12px 8px;text-align:center}
-.num{font-size:25px;font-weight:800;color:#1267d6}
-.num.red{color:#c32c2c}
-.label{font-size:12px;color:#69758a;margin-top:4px}
-.listhead{margin:20px 0 10px}
-.listhead p{margin:4px 0 0}
-.count{font-size:12px;background:#edf2fa;border-radius:12px;padding:6px 9px;color:#46546a}
-.list{max-height:260px;overflow:auto;border:1px solid #e8edf4;border-radius:12px}
-.empty{padding:22px;text-align:center;color:#8993a4;font-size:13px}
-.item{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid #edf0f5;font-size:14px}
-.item:last-child{border-bottom:0}
-.idx{color:#8993a4;min-width:25px}
-.value{overflow-wrap:anywhere;font-family:ui-monospace,Consolas,monospace}
-.actions{display:flex;gap:9px;margin-top:14px}
-.note{font-size:12px;color:#8791a2;line-height:1.5;margin:13px 2px 0}
-.manual{margin-top:14px;border-top:1px solid #edf0f5;padding-top:13px}
-.manual label{display:block;color:#657187;font-size:12px;margin-bottom:7px}
-.manualrow{display:flex;gap:8px}
-.manual input{flex:1;min-width:0;border:1px solid #d7deea;border-radius:10px;padding:12px;font-size:15px}
-.result{display:none}
-.result.show{display:block}
-.result h2{margin:8px 0;font-size:20px}
-.result textarea{width:100%;height:300px;border:1px solid #d7deea;border-radius:12px;padding:12px;font:14px/1.6 ui-monospace,Consolas,monospace;resize:vertical}
-.resultbar{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}
-.copymsg{min-height:20px;color:#16723a;font-size:13px;margin:9px 0}
-.copy-valid-row{margin-top:10px}
-.copy-valid-row .btn{width:100%}
-.footer{text-align:center;color:#9aa3b2;font-size:12px;padding:15px}
-@media(max-width:480px){
-body{padding:10px}
-.panel{padding:13px}
-.header h1{font-size:18px}
-.controls,.actions{gap:7px}
-.btn{padding:12px 10px;font-size:14px}
-.scanbox{min-height:230px}
-}
+.feedback{margin-top:12px;padding:13px;border-radius:10px;background:#f0f4fa;font-size:14px;overflow-wrap:anywhere}
+.feedback.success{background:#e7f8ed;color:#126b35}.feedback.duplicate,.feedback.error{background:#fff0f0;color:#b42318}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.stat{background:#f4f6fa;border-radius:10px;padding:12px 5px;text-align:center}
+.num{font-size:25px;font-weight:bold;color:#1267d6}.num.red{color:#c32c2c}.label{font-size:12px;color:#69758a;margin-top:4px}
+.listhead{margin:19px 0 10px}.list{max-height:260px;overflow:auto;border:1px solid #e8edf4;border-radius:10px}
+.empty{text-align:center;padding:22px;color:#8993a4;font-size:13px}
+.item{display:flex;gap:10px;padding:10px;border-bottom:1px solid #edf0f5;font-size:14px}.item:last-child{border:0}
+.idx{color:#8993a4;min-width:25px}.value{overflow-wrap:anywhere;font-family:monospace}
+.copyrow{margin-top:10px}.copyrow button{width:100%}.copymsg{min-height:20px;color:#168344;font-size:13px;margin-top:8px}
+.manual{margin-top:14px;padding-top:13px;border-top:1px solid #eee}.manual label{display:block;font-size:12px;color:#657187;margin-bottom:7px}
+.manualrow{display:flex;gap:8px}.manual input{flex:1;min-width:0;border:1px solid #d7deea;border-radius:9px;padding:12px;font-size:15px}
+.note{font-size:12px;color:#8791a2;line-height:1.5;margin-top:13px}
+.result{display:none}.result.show{display:block}.result h2{margin:10px 0;font-size:20px}
+.result textarea{width:100%;height:300px;border:1px solid #d7deea;border-radius:10px;padding:12px;font:14px/1.6 monospace}
+.resultbar{margin:18px 0 10px}.footer{text-align:center;color:#9aa3b2;font-size:12px;padding:15px}
+@media(max-width:480px){body{padding:10px}.panel{padding:12px}.btn{padding:12px 8px;font-size:13px}.scanbox{min-height:230px}}
 </style>
 </head>
-
 <body>
 <main class="app">
-<header class="header">
-<div class="logo">⌗</div>
-<div>
-<h1>QUÉT MÃ ĐƠN HÀNG</h1>
-<p>Quét nhanh · Báo trùng · Copy danh sách · v1.3</p>
-</div>
-</header>
+<header class="header"><div class="logo">⌗</div><div><h1>QUÉT MÃ ĐƠN HÀNG</h1><p>Khung xanh nhận diện mã · Báo trùng · Copy danh sách · v1.4</p></div></header>
 
 <section class="panel" id="scanPanel">
-
 <div class="headrow">
-<div>
-<h2>Máy quét</h2>
-<p class="muted">Mặc định sử dụng camera sau điện thoại.</p>
-</div>
+<div><h2>Máy quét</h2><p class="muted">Camera sau · Khung xanh bám theo mã được nhận diện.</p></div>
 <span class="pill" id="status">Chưa bật camera</span>
 </div>
 
 <div class="scanbox" id="scanBox">
 <video id="camera" autoplay muted playsinline class="hidden"></video>
-<div id="fallbackReader" class="hidden" style="width:100%"></div>
+<div id="fallbackReader" class="hidden"></div>
+<canvas id="scanOverlay" aria-hidden="true"></canvas>
 <div class="placeholder" id="placeholder">
 <div class="cam">▣</div>
 <strong>Camera sau sẽ hiển thị tại đây</strong>
@@ -107,12 +73,14 @@ body{padding:10px}
 </div>
 </div>
 
+<div class="live-code" id="liveCode">Chưa nhận diện mã nào trong camera.</div>
+
 <div class="controls">
-<button class="btn primary" id="startBtn">Bật camera sau</button>
-<button class="btn secondary" id="stopBtn" disabled>Tắt camera</button>
+<button class="btn primary" id="startBtn">BẬT CAMERA SAU</button>
+<button class="btn secondary" id="stopBtn" disabled>TẮT CAMERA</button>
 </div>
 
-<div class="feedback" id="feedback" role="status" aria-live="polite">Sẵn sàng quét mã.</div>
+<div class="feedback" id="feedback">Sẵn sàng quét mã.</div>
 
 <div class="stats">
 <div class="stat"><div class="num" id="successCount">0</div><div class="label">Mã hợp lệ</div></div>
@@ -121,167 +89,66 @@ body{padding:10px}
 </div>
 
 <div class="listhead">
-<div>
-<h2>Mã đã quét</h2>
-<p class="muted">Mỗi mã chỉ được thêm một lần.</p>
-</div>
+<div><h2>Mã đã quét</h2><p class="muted">Mỗi mã chỉ được thêm một lần.</p></div>
 <span class="count" id="listCount">0 mã</span>
 </div>
 
-<div class="list" id="scanList">
-<div class="empty">Chưa có mã nào.</div>
-</div>
+<div class="list" id="scanList"><div class="empty">Chưa có mã nào.</div></div>
 
-<div class="copy-valid-row">
+<div class="copyrow">
 <button class="btn secondary" id="copyValidBtn" disabled>COPY MÃ HỢP LỆ (0)</button>
-<div class="copymsg" id="copyValidMsg" aria-live="polite"></div>
+<div class="copymsg" id="copyValidMsg"></div>
 </div>
 
 <div class="manual">
-<label for="manualInput">Nhập mã thủ công (nếu cần)</label>
+<label for="manualInput">Nhập mã thủ công nếu cần</label>
 <div class="manualrow">
 <input id="manualInput" autocomplete="off" placeholder="Nhập mã rồi nhấn Enter">
-<button class="btn secondary" id="manualBtn">Thêm</button>
+<button class="btn secondary" id="manualBtn">THÊM</button>
 </div>
 </div>
 
 <div class="actions">
 <button class="btn finish" id="finishBtn" disabled>HOÀN THÀNH</button>
-<button class="btn danger" id="resetBtn">Xóa phiên</button>
+<button class="btn danger" id="resetBtn">XÓA PHIÊN</button>
 </div>
 
-<p class="note">Yêu cầu HTTPS và cho phép trình duyệt truy cập camera. Bản tối ưu tốc độ dùng camera 720p và ưu tiên QR cùng các mã vạch phổ biến. Đảm bảo đủ sáng, mã gần camera và không bị nghiêng.</p>
+<p class="note">Khi camera nhận mã, khung xanh sẽ bao quanh mã nếu trình duyệt trả về tọa độ; nội dung mã cũng hiện ngay dưới camera. Yêu cầu HTTPS và cấp quyền Camera.</p>
 </section>
 
 <section class="panel result" id="resultPanel">
 <div style="font-size:34px;color:#168344">✓</div>
 <h2>Đã hoàn thành phiên quét</h2>
 <p class="muted" id="summary"></p>
-<div class="resultbar">
-<strong>Danh sách mã</strong>
-<span class="count" id="resultCount">0 mã</span>
-</div>
+<div class="resultbar"><strong>Danh sách mã</strong><span class="count" id="resultCount">0 mã</span></div>
 <textarea id="resultText" readonly spellcheck="false"></textarea>
 <div class="copymsg" id="copyMsg"></div>
 <div class="actions">
 <button class="btn primary" id="copyBtn">COPY DANH SÁCH</button>
-<button class="btn secondary" id="backBtn">Quay lại</button>
+<button class="btn secondary" id="backBtn">QUAY LẠI</button>
 </div>
-<div class="actions">
-<button class="btn danger" id="newBtn" style="flex:1">Tạo phiên mới</button>
-</div>
+<div class="actions"><button class="btn danger" id="newBtn" style="flex:1">TẠO PHIÊN MỚI</button></div>
 </section>
-
 <div class="footer">Ứng dụng quét mã nội bộ</div>
 </main>
 
 <script>
 'use strict';
 (() => {
-
 const $ = id => document.getElementById(id);
-const STORE = 'order-code-scanner-session-v1';
+const STORE='order-code-scanner-session-v1';
+const formats=['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf'];
+const fallbackFormats=['QR_CODE','CODE_128','CODE_39','EAN_13','EAN_8','UPC_A','UPC_E','ITF'];
+let codes=[],seen=new Set(),duplicates=0,attempts=0,completed=false;
+let stream=null,detector=null,fallback=null,scanning=false,loopTimer=null;
+let audio=null,heldCode='',lastDetectedAt=0,overlayTimer=null,detecting=false;
+const video=$('camera'),canvas=$('scanOverlay'),ctx=canvas.getContext('2d');
 
-// Chỉ giữ các loại mã thông dụng để giảm thời gian giải mã.
-const formats = [
-'qr_code','code_128','code_39','ean_13',
-'ean_8','upc_a','upc_e','itf'
-];
-
-const fallbackFormats = [
-'QR_CODE','CODE_128','CODE_39','EAN_13',
-'EAN_8','UPC_A','UPC_E','ITF'
-];
-
-let codes = [];
-let seen = new Set();
-let duplicates = 0;
-let attempts = 0;
-let completed = false;
-
-let stream = null;
-let detector = null;
-let fallback = null;
-let scanning = false;
-let loopTimer = null;
-
-let audio = null;
-let heldCode = '';
-let lastDetectedAt = 0;
-
-const video = $('camera');
-
-function status(text,live=false){
-$('status').textContent=text;
-$('status').className='pill'+(live?' live':'');
-}
-
-function feedback(text,type=''){
-$('feedback').textContent=text;
-$('feedback').className='feedback'+(type?' '+type:'');
-}
-
-// Kích hoạt âm thanh.
-function unlockAudio(){
-try{
-const AC=window.AudioContext||window.webkitAudioContext;
-if(!AC)return;
-audio=audio||new AC();
-if(audio.state==='suspended')audio.resume().catch(()=>{});
-const osc=audio.createOscillator();
-const gain=audio.createGain();
-gain.gain.value=0.00001;
-osc.connect(gain);
-gain.connect(audio.destination);
-osc.start();
-osc.stop(audio.currentTime+0.02);
-}catch(e){}
-}
-
-// Âm thanh thành công và âm thanh báo trùng.
-function beep(type){
-try{
-const AC=window.AudioContext||window.webkitAudioContext;
-if(!AC)return;
-audio=audio||new AC();
-if(audio.state==='suspended')audio.resume().catch(()=>{});
-
-const now=audio.currentTime;
-const osc=audio.createOscillator();
-const gain=audio.createGain();
-
-osc.type='sine';
-osc.connect(gain);
-gain.connect(audio.destination);
-gain.gain.setValueAtTime(0.001,now);
-
-if(type==='ok'){
-osc.frequency.setValueAtTime(1150,now);
-gain.gain.exponentialRampToValueAtTime(0.16,now+0.008);
-gain.gain.exponentialRampToValueAtTime(0.001,now+0.15);
-osc.start(now);
-osc.stop(now+0.16);
-}else{
-osc.frequency.setValueAtTime(520,now);
-osc.frequency.setValueAtTime(340,now+0.17);
-gain.gain.exponentialRampToValueAtTime(0.15,now+0.01);
-gain.gain.exponentialRampToValueAtTime(0.001,now+0.12);
-gain.gain.setValueAtTime(0.001,now+0.17);
-gain.gain.exponentialRampToValueAtTime(0.15,now+0.19);
-gain.gain.exponentialRampToValueAtTime(0.001,now+0.32);
-osc.start(now);
-osc.stop(now+0.33);
-}
-}catch(e){}
-if(navigator.vibrate)navigator.vibrate(type==='ok'?55:[100,45,100]);
-}
-
-function save(){
-try{
-localStorage.setItem(STORE,JSON.stringify({codes,duplicates,attempts}));
-}catch(e){}
-}
-
+function status(text,live=false){$('status').textContent=text;$('status').className='pill'+(live?' live':'');}
+function feedback(text,type=''){$('feedback').textContent=text;$('feedback').className='feedback'+(type?' '+type:'');}
+function unlockAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=audio||new AC();if(audio.state==='suspended')audio.resume().catch(()=>{});const o=audio.createOscillator(),g=audio.createGain();g.gain.value=.00001;o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.02);}catch(e){}}
+function beep(type){try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){audio=audio||new AC();if(audio.state==='suspended')audio.resume().catch(()=>{});const n=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.type='sine';o.connect(g);g.connect(audio.destination);g.gain.setValueAtTime(.001,n);if(type==='ok'){o.frequency.setValueAtTime(1150,n);g.gain.exponentialRampToValueAtTime(.16,n+.008);g.gain.exponentialRampToValueAtTime(.001,n+.15);o.start(n);o.stop(n+.16);}else{o.frequency.setValueAtTime(520,n);o.frequency.setValueAtTime(340,n+.17);g.gain.exponentialRampToValueAtTime(.15,n+.01);g.gain.exponentialRampToValueAtTime(.001,n+.12);g.gain.setValueAtTime(.001,n+.17);g.gain.exponentialRampToValueAtTime(.15,n+.19);g.gain.exponentialRampToValueAtTime(.001,n+.32);o.start(n);o.stop(n+.33);}}}catch(e){}if(navigator.vibrate)navigator.vibrate(type==='ok'?55:[100,45,100]);}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({codes,duplicates,attempts}));}catch(e){}}
 function render(){
 $('successCount').textContent=codes.length;
 $('duplicateCount').textContent=duplicates;
@@ -290,467 +157,259 @@ $('listCount').textContent=codes.length+' mã';
 $('finishBtn').disabled=!codes.length||completed;
 $('copyValidBtn').textContent='COPY MÃ HỢP LỆ ('+codes.length+')';
 $('copyValidBtn').disabled=!codes.length||completed;
-
-const list=$('scanList');
-list.replaceChildren();
-
-if(!codes.length){
-const empty=document.createElement('div');
-empty.className='empty';
-empty.textContent='Chưa có mã nào.';
-list.append(empty);
-return;
-}
-
+const list=$('scanList');list.replaceChildren();
+if(!codes.length){const e=document.createElement('div');e.className='empty';e.textContent='Chưa có mã nào.';list.append(e);return;}
 codes.forEach((code,i)=>{
-const row=document.createElement('div');
-row.className='item';
-const n=document.createElement('span');
-n.className='idx';
-n.textContent=(i+1)+'.';
-const v=document.createElement('span');
-v.className='value';
-v.textContent=code;
-row.append(n,v);
-list.append(row);
+const row=document.createElement('div');row.className='item';
+const n=document.createElement('span');n.className='idx';n.textContent=(i+1)+'.';
+const v=document.createElement('span');v.className='value';v.textContent=code;
+row.append(n,v);list.append(row);
 });
 }
-
 function accept(raw){
 if(completed)return;
-const code=String(raw??'').trim();
-if(!code)return;
-
+const code=String(raw??'').trim();if(!code)return;
 attempts++;
-
-if(seen.has(code)){
-duplicates++;
-feedback('⚠ MÃ ĐÃ QUÉT TRƯỚC ĐÓ: '+code,'duplicate');
-beep('dup');
+if(seen.has(code)){duplicates++;feedback('⚠ MÃ ĐÃ QUÉT TRƯỚC ĐÓ: '+code,'duplicate');beep('dup');}
+else{seen.add(code);codes.push(code);feedback('✓ QUÉT THÀNH CÔNG: '+code,'success');beep('ok');}
+save();render();
+}
+function resizeOverlay(){
+const r=$('scanBox').getBoundingClientRect(),dpr=Math.max(1,window.devicePixelRatio||1);
+canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);
+canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';
+ctx.setTransform(dpr,0,0,dpr,0,0);
+return {width:r.width,height:r.height};
+}
+function clearOverlay(){
+if(overlayTimer){clearTimeout(overlayTimer);overlayTimer=null;}
+const r=resizeOverlay();ctx.clearRect(0,0,r.width,r.height);
+}
+function mapPoint(x,y,sourceW,sourceH,stageW,stageH){
+const scale=Math.min(stageW/sourceW,stageH/sourceH);
+const drawW=sourceW*scale,drawH=sourceH*scale;
+return {x:(stageW-drawW)/2+x*scale,y:(stageH-drawH)/2+y*scale};
+}
+function drawDetectedBox(geometry,sourceW,sourceH,code){
+if(!sourceW||!sourceH)return;
+const stage=resizeOverlay(),w=stage.width,h=stage.height;
+let points=[];
+if(geometry?.cornerPoints?.length>=4){
+points=geometry.cornerPoints.map(p=>mapPoint(p.x,p.y,sourceW,sourceH,w,h));
+}else if(geometry?.bounds){
+const b=geometry.bounds;
+points=[{x:b.x,y:b.y},{x:b.x+b.width,y:b.y},{x:b.x+b.width,y:b.y+b.height},{x:b.x,y:b.y+b.height}].map(p=>mapPoint(p.x,p.y,sourceW,sourceH,w,h));
+}else if(geometry?.boundingBox){
+const b=geometry.boundingBox;
+points=[{x:b.x,y:b.y},{x:b.x+b.width,y:b.y},{x:b.x+b.width,y:b.y+b.height},{x:b.x,y:b.y+b.height}].map(p=>mapPoint(p.x,p.y,sourceW,sourceH,w,h));
+}
+ctx.clearRect(0,0,w,h);
+if(points.length>=4){
+ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
+ctx.closePath();
+ctx.fillStyle='rgba(30,230,105,.14)';ctx.fill();
+ctx.strokeStyle='#20e66a';ctx.lineWidth=4;ctx.shadowColor='#00ff68';ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;
+points.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,4,0,Math.PI*2);ctx.fillStyle='#20e66a';ctx.fill();});
+const minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y));
+drawLabel('ĐÃ NHẬN: '+code,minX,Math.max(28,minY-10),w);
 }else{
-seen.add(code);
-codes.push(code);
-feedback('✓ QUÉT THÀNH CÔNG: '+code,'success');
-beep('ok');
+const bx=w*.12,by=h*.14,bw=w*.76,bh=h*.72;
+ctx.strokeStyle='#20e66a';ctx.lineWidth=4;ctx.shadowColor='#00ff68';ctx.shadowBlur=12;ctx.strokeRect(bx,by,bw,bh);ctx.shadowBlur=0;
+drawLabel('ĐÃ NHẬN: '+code,bx,by+28,w);
 }
-
-save();
-render();
+$('liveCode').textContent='MÃ ĐANG HIỂN THỊ: '+code;
+if(overlayTimer)clearTimeout(overlayTimer);
+overlayTimer=setTimeout(()=>{clearOverlay();$('liveCode').textContent='Đưa mã tiếp theo vào camera.';},1500);
 }
-
-function onCameraCode(raw){
-const code=String(raw||'').trim();
+function drawLabel(text,x,y,stageW){
+const maxW=Math.min(stageW-16,Math.max(165,text.length*7.2+24));
+const left=Math.max(8,Math.min(x,stageW-maxW-8));
+const top=Math.max(24,Math.min(y,canvas.clientHeight-12));
+ctx.font='bold 13px Arial';ctx.fillStyle='#0a8f43';
+ctx.fillRect(left,top-22,maxW,27);
+ctx.fillStyle='#fff';
+let t=text;
+while(ctx.measureText(t).width>maxW-16&&t.length>8)t=t.slice(0,-4)+'…';
+ctx.fillText(t,left+8,top-4);
+}
+function handleCameraCode(code,geometry,sourceW,sourceH){
 if(!code)return;
-
+drawDetectedBox(geometry,sourceW,sourceH,code);
 const now=Date.now();
-
-if(code===heldCode){
-lastDetectedAt=now;
-return;
+if(code===heldCode){lastDetectedAt=now;return;}
+heldCode=code;lastDetectedAt=now;accept(code);
 }
-
-heldCode=code;
-lastDetectedAt=now;
-accept(code);
-}
-
 function loadFallbackLibrary(){
 return new Promise((resolve,reject)=>{
-if(window.Html5Qrcode){
-resolve();
-return;
-}
-
-const urls=[
-'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
-'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
-];
-
+if(window.Html5Qrcode){resolve();return;}
+const urls=['https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js','https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'];
 let i=0;
-
 const next=()=>{
-if(i>=urls.length){
-reject(new Error('Không tải được thư viện quét. Hãy kiểm tra Internet.'));
-return;
-}
-
-const s=document.createElement('script');
-s.src=urls[i++];
-s.onload=()=>window.Html5Qrcode?resolve():next();
-s.onerror=next;
-document.head.append(s);
+if(i>=urls.length){reject(new Error('Không tải được thư viện quét. Hãy kiểm tra Internet.'));return;}
+const s=document.createElement('script');s.src=urls[i++];
+s.onload=()=>window.Html5Qrcode?resolve():next();s.onerror=next;document.head.append(s);
 };
-
 next();
 });
 }
-
-// Bộ quét tích hợp trên Chrome Android.
 async function startNative(){
-
-const supported=await window.BarcodeDetector.getSupportedFormats();
+const supported=await BarcodeDetector.getSupportedFormats();
 const usable=formats.filter(f=>supported.includes(f));
-
-if(!usable.includes('qr_code')||usable.length<2){
-throw new Error('Bộ quét tích hợp không hỗ trợ đủ định dạng.');
-}
-
-detector=new window.BarcodeDetector({formats:usable});
-
+if(!usable.includes('qr_code')||usable.length<2)throw new Error('Bộ quét tích hợp không hỗ trợ đủ định dạng.');
+detector=new BarcodeDetector({formats:usable});
 stream=await navigator.mediaDevices.getUserMedia({
 audio:false,
-video:{
-facingMode:{exact:'environment'},
-width:{ideal:1280,max:1280},
-height:{ideal:720,max:720},
-frameRate:{ideal:30,max:30}
-}
+video:{facingMode:{exact:'environment'},width:{ideal:1280,max:1280},height:{ideal:720,max:720},frameRate:{ideal:30,max:30}}
 });
-
-// Lấy nét liên tục nếu camera hỗ trợ.
 try{
 const track=stream.getVideoTracks()[0];
-if(track&&track.applyConstraints){
-await track.applyConstraints({
-advanced:[{focusMode:'continuous'}]
-});
-}
+if(track?.applyConstraints)await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
 }catch(e){}
-
-video.srcObject=stream;
-video.classList.remove('hidden');
+video.srcObject=stream;video.classList.remove('hidden');
 $('fallbackReader').classList.add('hidden');
-await video.play();
-
-scanning=true;
-$('placeholder').classList.add('hidden');
-status('Đang dùng camera sau',true);
-
+await video.play();scanning=true;
+$('placeholder').classList.add('hidden');status('Đang dùng camera sau',true);
 async function loop(){
-if(!scanning)return;
-
+if(!scanning||detecting)return;
+detecting=true;
 try{
 if(video.readyState>=2){
 const results=await detector.detect(video);
 if(results.length){
-onCameraCode(results[0].rawValue);
-}else if(Date.now()-lastDetectedAt>900){
-heldCode='';
+const b=results[0];
+handleCameraCode(b.rawValue,b,video.videoWidth,video.videoHeight);
+}else if(Date.now()-lastDetectedAt>900){heldCode='';}
+}
+}catch(e){console.debug('Frame scan:',e);}
+finally{
+detecting=false;
+if(scanning)loopTimer=setTimeout(loop,35);
 }
 }
-}catch(e){
-console.debug('Frame scan:',e);
-}
-
-if(scanning){
-loopTimer=setTimeout(loop,35);
-}
-}
-
 loop();
 }
-
-// Bộ quét dự phòng.
 async function startFallback(){
-
 await loadFallbackLibrary();
-
-$('fallbackReader').classList.remove('hidden');
-video.classList.add('hidden');
-
+$('fallbackReader').classList.remove('hidden');video.classList.add('hidden');
 const supported=window.Html5QrcodeSupportedFormats;
-
-const selected=fallbackFormats
-.map(k=>supported[k])
-.filter(v=>typeof v==='number');
-
-fallback=new window.Html5Qrcode('fallbackReader',{
-verbose:false,
-formatsToSupport:selected
-});
-
+const selected=fallbackFormats.map(k=>supported[k]).filter(v=>typeof v==='number');
+fallback=new Html5Qrcode('fallbackReader',{verbose:false,formatsToSupport:selected});
 await fallback.start(
 {facingMode:'environment'},
-{
-fps:20,
-qrbox:(w,h)=>({
-width:Math.max(180,Math.floor(Math.min(w*.90,640))),
-height:Math.max(160,Math.floor(Math.min(h*.82,480)))
-})
+{fps:20,qrbox:(w,h)=>({width:Math.max(180,Math.floor(Math.min(w*.90,640))),height:Math.max(160,Math.floor(Math.min(h*.82,480)))})},
+(text,result)=>{
+const info=result?.result||result||{};
+const streamVideo=$('fallbackReader').querySelector('video');
+handleCameraCode(text,info,streamVideo?.videoWidth||1280,streamVideo?.videoHeight||720);
 },
-text=>onCameraCode(text),
-()=>{
-if(Date.now()-lastDetectedAt>900){
-heldCode='';
-}
-}
+()=>{if(Date.now()-lastDetectedAt>900)heldCode='';}
 );
-
-scanning=true;
-$('placeholder').classList.add('hidden');
-status('Đang dùng camera sau',true);
+scanning=true;$('placeholder').classList.add('hidden');status('Đang dùng camera sau',true);
 }
-
-// Bật camera.
 async function start(){
-
 if(scanning||completed)return;
-
-unlockAudio();
-
-$('startBtn').disabled=true;
-feedback('Đang mở camera sau…');
-
+unlockAudio();$('startBtn').disabled=true;feedback('Đang mở camera sau…');
 try{
-
-if(!navigator.mediaDevices||
-!navigator.mediaDevices.getUserMedia){
-throw new Error('Hãy mở app bằng HTTPS trên Chrome hoặc Safari.');
-}
-
-if('BarcodeDetector' in window&&
-typeof window.BarcodeDetector.getSupportedFormats==='function'){
-
+if(!navigator.mediaDevices?.getUserMedia)throw new Error('Hãy mở app bằng HTTPS trên Chrome hoặc Safari.');
+if('BarcodeDetector'in window&&typeof BarcodeDetector.getSupportedFormats==='function'){
 try{
 await startNative();
-feedback('Camera sau đã bật ở chế độ quét nhanh. Đưa QR hoặc mã vạch vào giữa hình.','success');
+feedback('Camera sau đã bật. Khi nhận mã, khung xanh sẽ xuất hiện quanh mã.','success');
 }catch(e){
 console.warn('Chuyển sang bộ quét dự phòng:',e);
-
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-stream=null;
-}
-
-video.srcObject=null;
-detector=null;
-
+if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+video.srcObject=null;detector=null;
 await startFallback();
-feedback('Đã bật camera sau ở chế độ tương thích.','success');
+feedback('Camera sau đã bật ở chế độ tương thích.','success');
 }
-
 }else{
 await startFallback();
-feedback('Đã bật camera sau ở chế độ tương thích.','success');
+feedback('Camera sau đã bật ở chế độ tương thích.','success');
 }
-
 $('stopBtn').disabled=false;
-
 }catch(e){
 console.error(e);
-
-const msg=e.name==='NotAllowedError'
-?'Bạn chưa cấp quyền camera.'
-:e.name==='NotFoundError'
-?'Không tìm thấy camera sau.'
-:e.name==='NotReadableError'
-?'Camera đang được ứng dụng khác sử dụng.'
-:(e.message||'Không thể mở camera.');
-
-feedback(msg,'error');
-status('Chưa bật camera');
-$('startBtn').disabled=false;
+const msg=e.name==='NotAllowedError'?'Bạn chưa cấp quyền camera.':e.name==='NotFoundError'?'Không tìm thấy camera sau.':e.name==='NotReadableError'?'Camera đang được ứng dụng khác sử dụng.':(e.message||'Không thể mở camera.');
+feedback(msg,'error');status('Chưa bật camera');$('startBtn').disabled=false;
 }
 }
-
-// Tắt camera.
 async function stop(){
-
 scanning=false;
-
-if(loopTimer)clearTimeout(loopTimer);
-loopTimer=null;
-
-if(stream){
-stream.getTracks().forEach(t=>t.stop());
-stream=null;
-}
-
-video.srcObject=null;
-video.classList.add('hidden');
-detector=null;
-
-if(fallback){
-try{await fallback.stop();}catch(e){}
-try{fallback.clear();}catch(e){}
-fallback=null;
-}
-
-$('fallbackReader').classList.add('hidden');
-$('placeholder').classList.remove('hidden');
-$('startBtn').disabled=completed;
-$('stopBtn').disabled=true;
-
+if(loopTimer)clearTimeout(loopTimer);loopTimer=null;
+if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+video.srcObject=null;video.classList.add('hidden');detector=null;
+if(fallback){try{await fallback.stop();}catch(e){}try{fallback.clear();}catch(e){}fallback=null;}
+$('fallbackReader').classList.add('hidden');$('placeholder').classList.remove('hidden');
+$('startBtn').disabled=completed;$('stopBtn').disabled=true;
 status(completed?'Đã hoàn thành':'Đã tắt camera');
-
-heldCode='';
-lastDetectedAt=0;
+heldCode='';lastDetectedAt=0;clearOverlay();
 }
-
-// Hoàn thành.
 async function finish(){
-
 if(!codes.length||completed)return;
-
-completed=true;
-await stop();
-
-$('scanPanel').classList.add('hidden');
-$('resultPanel').classList.add('show');
-
-$('summary').textContent=
-`Đã ghi nhận ${codes.length} mã hợp lệ và ${duplicates} lượt trùng.`;
-
+completed=true;await stop();
+$('scanPanel').classList.add('hidden');$('resultPanel').classList.add('show');
+$('summary').textContent=`Đã ghi nhận ${codes.length} mã hợp lệ và ${duplicates} lượt trùng.`;
 $('resultCount').textContent=codes.length+' mã';
-$('resultText').value=codes.join('\n');
-
-window.scrollTo(0,0);
+$('resultText').value=codes.join('\n');window.scrollTo(0,0);
 }
-
-// Sao chép.
-async function copyTextToClipboard(value){
-
-if(navigator.clipboard&&window.isSecureContext){
-await navigator.clipboard.writeText(value);
-return;
+async function copyText(value){
+if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return;}
+const t=document.createElement('textarea');t.value=value;t.setAttribute('readonly','');
+t.style.position='fixed';t.style.opacity='0';t.style.left='-9999px';
+document.body.append(t);t.select();const ok=document.execCommand('copy');t.remove();
+if(!ok)throw new Error('Không thể sao chép.');
 }
-
-const temp=document.createElement('textarea');
-temp.value=value;
-temp.setAttribute('readonly','');
-temp.style.position='fixed';
-temp.style.opacity='0';
-temp.style.left='-9999px';
-
-document.body.append(temp);
-temp.select();
-
-const ok=document.execCommand('copy');
-temp.remove();
-
-if(!ok){
-throw new Error('Không thể tự động sao chép.');
-}
-}
-
-async function copyValidCodes(){
-
+async function copyValid(){
 if(!codes.length)return;
-
-try{
-await copyTextToClipboard(codes.join('\n'));
-$('copyValidMsg').textContent=
-'✓ Đã copy '+codes.length+' mã hợp lệ (không gồm mã trùng).';
-}catch(e){
-$('copyValidMsg').textContent=
-'Không tự copy được. Hãy dùng nút Hoàn thành để copy danh sách.';
+try{await copyText(codes.join('\n'));$('copyValidMsg').textContent='✓ Đã copy '+codes.length+' mã hợp lệ, không gồm mã trùng.';}
+catch(e){$('copyValidMsg').textContent='Không copy tự động được. Hãy nhấn Hoàn thành để copy danh sách.';}
 }
-}
-
-async function copy(){
-
+async function copyResult(){
 if(!codes.length)return;
-
-try{
-await copyTextToClipboard(codes.join('\n'));
-$('copyMsg').textContent='✓ Đã copy danh sách.';
-}catch(e){
-$('resultText').focus();
-$('resultText').select();
-$('copyMsg').textContent='Đã chọn toàn bộ mã. Nhấn Sao chép.';
+try{await copyText(codes.join('\n'));$('copyMsg').textContent='✓ Đã copy danh sách mã.';}
+catch(e){$('resultText').focus();$('resultText').select();$('copyMsg').textContent='Đã chọn toàn bộ mã. Nhấn Sao chép.';}
 }
-}
-
-// Nhập mã thủ công.
 function addManual(){
-
-const input=$('manualInput');
-if(!input.value.trim())return;
-
-heldCode='';
-accept(input.value);
-input.value='';
-input.focus();
+const input=$('manualInput');if(!input.value.trim())return;
+heldCode='';accept(input.value);input.value='';input.focus();
 }
-
-// Tạo phiên mới.
 async function reset(){
-
 if(!confirm('Xóa toàn bộ mã của phiên hiện tại?'))return;
-
-await stop();
-
-codes=[];
-seen.clear();
-duplicates=0;
-attempts=0;
-completed=false;
-heldCode='';
-
+await stop();codes=[];seen.clear();duplicates=0;attempts=0;completed=false;heldCode='';
 localStorage.removeItem(STORE);
-
-$('scanPanel').classList.remove('hidden');
-$('resultPanel').classList.remove('show');
-$('resultText').value='';
-$('copyMsg').textContent='';
-$('copyValidMsg').textContent='';
-
-$('startBtn').disabled=false;
-
-status('Chưa bật camera');
-feedback('Đã tạo phiên mới. Sẵn sàng quét mã.');
-
-render();
+$('scanPanel').classList.remove('hidden');$('resultPanel').classList.remove('show');
+$('resultText').value='';$('copyMsg').textContent='';$('copyValidMsg').textContent='';
+$('liveCode').textContent='Chưa nhận diện mã nào trong camera.';
+$('startBtn').disabled=false;status('Chưa bật camera');
+feedback('Đã tạo phiên mới. Sẵn sàng quét mã.');render();
 }
-
-// Sự kiện nút.
 $('startBtn').addEventListener('click',start);
 $('stopBtn').addEventListener('click',stop);
 $('finishBtn').addEventListener('click',finish);
-$('copyBtn').addEventListener('click',copy);
-$('copyValidBtn').addEventListener('click',copyValidCodes);
+$('copyValidBtn').addEventListener('click',copyValid);
+$('copyBtn').addEventListener('click',copyResult);
 $('resetBtn').addEventListener('click',reset);
 $('newBtn').addEventListener('click',reset);
-
 $('backBtn').addEventListener('click',()=>{
-$('resultPanel').classList.remove('show');
-$('scanPanel').classList.remove('hidden');
+$('resultPanel').classList.remove('show');$('scanPanel').classList.remove('hidden');
 });
-
-$('manualBtn').addEventListener('click',()=>{
-unlockAudio();
-addManual();
-});
-
+$('manualBtn').addEventListener('click',()=>{unlockAudio();addManual();});
 $('manualInput').addEventListener('keydown',e=>{
-if(e.key==='Enter'){
-e.preventDefault();
-unlockAudio();
-addManual();
-}
+if(e.key==='Enter'){e.preventDefault();unlockAudio();addManual();}
 });
-
-// Khôi phục dữ liệu.
+window.addEventListener('resize',()=>{if(scanning)clearOverlay();});
 try{
 const saved=JSON.parse(localStorage.getItem(STORE)||'null');
-
 if(saved&&Array.isArray(saved.codes)){
-codes=[...new Set(
-saved.codes.filter(x=>typeof x==='string'&&x.trim())
-)];
-
+codes=[...new Set(saved.codes.filter(x=>typeof x==='string'&&x.trim()))];
 seen=new Set(codes);
-duplicates=Number(saved.duplicates)||0;
-attempts=Number(saved.attempts)||codes.length+duplicates;
+duplicates=Number(saved.duplicates??saved.duplicateHits)||0;
+attempts=Number(saved.attempts??saved.totalHits)||codes.length+duplicates;
 }
 }catch(e){}
-
 render();
-
-if(codes.length){
-feedback('Đã khôi phục '+codes.length+' mã từ phiên trước.');
-}
-
+if(codes.length)feedback('Đã khôi phục '+codes.length+' mã từ phiên trước.');
 })();
 </script>
 </body>
