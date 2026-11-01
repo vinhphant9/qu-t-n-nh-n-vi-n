@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1267d6" />
+  <meta name="description" content="Ứng dụng quét mã QR và mã vạch, phát hiện mã trùng và sao chép danh sách mã." />
+  <title>Quét mã đơn hàng</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Thư viện quét QR và mã vạch; cần Internet khi tải lần đầu. -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="brand-mark" aria-hidden="true">⌗</div>
+      <div>
+        <h1>QUÉT MÃ ĐƠN HÀNG</h1>
+        <p>Quét nhanh · Kiểm tra trùng · Copy danh sách</p>
+      </div>
+    </header>
+
+    <section id="scanView" class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Máy quét</h2>
+          <p class="muted">Đưa QR hoặc mã vạch vào giữa khung hình.</p>
+        </div>
+        <span id="sessionStatus" class="status-pill status-ready">Chưa bật camera</span>
+      </div>
+
+      <div class="scanner-wrap">
+        <div id="reader" aria-label="Khung camera quét mã"></div>
+        <div id="cameraPlaceholder" class="camera-placeholder">
+          <div class="camera-icon" aria-hidden="true">▣</div>
+          <strong>Camera sẽ hiển thị tại đây</strong>
+          <span>Nhấn “Bật camera” để bắt đầu quét.</span>
+        </div>
+      </div>
+
+      <div class="camera-controls">
+        <label class="field-label" for="cameraSelect">Camera</label>
+        <select id="cameraSelect" aria-label="Chọn camera">
+          <option value="">Camera mặc định</option>
+        </select>
+        <div class="button-row">
+          <button id="startCameraBtn" class="button button-primary" type="button">Bật camera</button>
+          <button id="stopCameraBtn" class="button button-secondary" type="button" disabled>Tắt camera</button>
+        </div>
+      </div>
+
+      <div id="feedback" class="feedback feedback-neutral" role="status" aria-live="polite">
+        Sẵn sàng quét mã.
+      </div>
+
+      <div class="manual-entry">
+        <label class="field-label" for="manualCode">Nhập mã thủ công / máy quét USB</label>
+        <div class="manual-row">
+          <input id="manualCode" type="text" inputmode="text" autocomplete="off" placeholder="Nhập hoặc quét mã rồi nhấn Enter" />
+          <button id="addManualBtn" class="button button-secondary" type="button">Thêm mã</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" aria-label="Thống kê phiên quét">
+        <div class="stat-card">
+          <span class="stat-number" id="successCount">0</span>
+          <span class="stat-label">Mã hợp lệ</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number stat-danger" id="duplicateCount">0</span>
+          <span class="stat-label">Lượt trùng</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="totalAttempts">0</span>
+          <span class="stat-label">Tổng lượt nhận</span>
+        </div>
+      </div>
+
+      <div class="list-heading">
+        <div>
+          <h2>Mã đã quét</h2>
+          <p class="muted">Mã hợp lệ được thêm một lần duy nhất.</p>
+        </div>
+        <span id="listCount" class="count-badge">0 mã</span>
+      </div>
+      <div id="scanList" class="scan-list empty-state">Chưa có mã nào.</div>
+
+      <div class="finish-actions">
+        <button id="finishBtn" class="button button-finish" type="button" disabled>Hoàn thành</button>
+        <button id="resetBtn" class="button button-danger-outline" type="button">Xóa phiên</button>
+      </div>
+      <p class="footnote">Dữ liệu phiên quét được lưu tạm trên thiết bị này. Không cần tài khoản.</p>
+    </section>
+
+    <section id="resultView" class="panel result-panel" hidden>
+      <div class="result-success-icon" aria-hidden="true">✓</div>
+      <h2>Đã hoàn thành phiên quét</h2>
+      <p id="resultSummary" class="muted">Danh sách mã đã sẵn sàng.</p>
+
+      <div class="result-toolbar">
+        <strong>Danh sách mã</strong>
+        <span id="resultCount" class="count-badge">0 mã</span>
+      </div>
+      <textarea id="resultText" class="result-text" readonly spellcheck="false" aria-label="Danh sách mã, mỗi mã một dòng"></textarea>
+      <div id="copyFeedback" class="copy-feedback" role="status" aria-live="polite"></div>
+      <div class="result-buttons">
+        <button id="copyBtn" class="button button-primary" type="button">Copy danh sách</button>
+        <button id="backBtn" class="button button-secondary" type="button">Quay lại xem phiên</button>
+        <button id="newSessionBtn" class="button button-danger-outline" type="button">Tạo phiên mới</button>
+      </div>
+      <p class="footnote">Mỗi mã nằm trên một dòng. Bạn có thể dán trực tiếp vào Excel, Google Sheets hoặc tin nhắn.</p>
+    </section>
+
+    <footer class="app-footer">Ứng dụng quét mã nội bộ</footer>
+  </main>
+
+  <noscript>Ứng dụng cần bật JavaScript để hoạt động.</noscript>
+</body>
+</html>
