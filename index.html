@@ -7,8 +7,30 @@
   <meta name="description" content="Ứng dụng quét mã QR và mã vạch, phát hiện mã trùng và sao chép danh sách mã." />
   <title>Quét mã đơn hàng</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Thư viện quét QR và mã vạch; cần Internet khi tải lần đầu. -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" defer></script>
+  <!-- Tải thư viện quét từ CDN chính; tự chuyển sang CDN dự phòng nếu lỗi. -->
+  <script>
+    window.html5QrcodeLibraryReady = new Promise((resolve, reject) => {
+      const sources = [
+        'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
+        'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+      ];
+      const loadSource = (index) => {
+        if (index >= sources.length) {
+          reject(new Error('Không tải được thư viện quét mã. Hãy kiểm tra kết nối Internet rồi tải lại trang.'));
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = sources[index];
+        script.onload = () => {
+          if (window.Html5Qrcode && window.Html5QrcodeSupportedFormats) resolve();
+          else loadSource(index + 1);
+        };
+        script.onerror = () => loadSource(index + 1);
+        document.head.appendChild(script);
+      };
+      loadSource(0);
+    });
+  </script>
   <script src="app.js" defer></script>
 </head>
 <body>
