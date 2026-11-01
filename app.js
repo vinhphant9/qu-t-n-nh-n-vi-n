@@ -45,22 +45,27 @@
   let audioContext = null;
   let cameras = [];
 
-  const FORMAT_ENUM = window.Html5QrcodeSupportedFormats;
-  const FORMATS = FORMAT_ENUM ? [
-    FORMAT_ENUM.QR_CODE,
-    FORMAT_ENUM.CODE_128,
-    FORMAT_ENUM.CODE_39,
-    FORMAT_ENUM.CODE_93,
-    FORMAT_ENUM.CODABAR,
-    FORMAT_ENUM.EAN_13,
-    FORMAT_ENUM.EAN_8,
-    FORMAT_ENUM.ITF,
-    FORMAT_ENUM.UPC_A,
-    FORMAT_ENUM.UPC_E,
-    FORMAT_ENUM.DATA_MATRIX,
-    FORMAT_ENUM.PDF_417,
-    FORMAT_ENUM.AZTEC
-  ].filter((format) => typeof format === 'number') : [];
+  function getSupportedFormats() {
+    const formats = window.Html5QrcodeSupportedFormats;
+    if (!formats) throw new Error('Thư viện quét mã chưa sẵn sàng. Hãy tải lại trang.');
+    // Bao gồm QR và các mã vạch thường gặp trên nhãn hàng/đơn vận chuyển.
+    return [
+      formats.QR_CODE,
+      formats.CODE_128,
+      formats.CODE_39,
+      formats.CODE_93,
+      formats.CODABAR,
+      formats.EAN_13,
+      formats.EAN_8,
+      formats.ITF,
+      formats.UPC_A,
+      formats.UPC_E,
+      formats.UPC_EAN_EXTENSION,
+      formats.DATA_MATRIX,
+      formats.PDF_417,
+      formats.AZTEC
+    ].filter((format) => typeof format === 'number');
+  }
 
   function loadSession() {
     try {
@@ -193,7 +198,7 @@
 
   async function populateCameras() {
     if (!window.Html5Qrcode) throw new Error('Thư viện quét mã chưa tải xong. Kiểm tra kết nối Internet rồi tải lại trang.');
-    cameras = await Html5Qrcode.getCameras();
+    cameras = await window.Html5Qrcode.getCameras();
     const previous = els.cameraSelect.value;
     els.cameraSelect.replaceChildren();
     const defaultOption = document.createElement('option');
@@ -206,12 +211,16 @@
       option.textContent = camera.label || `Camera ${index + 1}`;
       els.cameraSelect.appendChild(option);
     });
-    if (previous && cameras.some((camera) => camera.id === previous)) els.cameraSelect.value = previous;
-    else {
+    if (cameras.length === 0) throw new Error('Không tìm thấy camera. Hãy cấp quyền camera cho trình duyệt và kiểm tra camera có đang được ứng dụng khác sử dụng không.');
+
+    // Ưu tiên camera sau trên điện thoại. Trên máy tính, chọn webcam đầu tiên;
+    // không ép facingMode=environment vì webcam máy tính thường không có chế độ này.
+    if (previous && cameras.some((camera) => camera.id === previous)) {
+      els.cameraSelect.value = previous;
+    } else {
       const rearCamera = cameras.find((camera) => /back|rear|environment|sau/i.test(camera.label || ''));
-      if (rearCamera) els.cameraSelect.value = rearCamera.id;
+      els.cameraSelect.value = (rearCamera || cameras[0]).id;
     }
-    if (cameras.length === 0) throw new Error('Không tìm thấy camera. Hãy cấp quyền camera cho trình duyệt.');
   }
 
   async function startCamera() {
@@ -220,29 +229,39 @@
     showFeedback('Đang khởi động camera…', 'neutral');
     try {
       prepareAudio();
-      if (!window.Html5Qrcode || !window.Html5QrcodeSupportedFormats) throw new Error('Thư viện quét mã chưa tải xong. Hãy kiểm tra Internet và tải lại trang.');
+      // Chờ thư viện từ CDN tải xong; nếu CDN đầu lỗi, index.html tự thử CDN dự phòng.
+      if (window.html5QrcodeLibraryReady) await window.html5QrcodeLibraryReady;
+      if (!window.Html5Qrcode || !window.Html5QrcodeSupportedFormats) {
+        throw new Error('Không tải được thư viện quét mã. Kiểm tra Internet rồi tải lại trang.');
+      }
       if (!cameras.length) await populateCameras();
-      if (!scanner) scanner = new Html5Qrcode('reader', { formatsToSupport: FORMATS, verbose: false });
+      if (!scanner) {
+        scanner = new window.Html5Qrcode('reader', {
+          formatsToSupport: getSupportedFormats(),
+          verbose: false
+        });
+      }
 
-      const selectedCamera = els.cameraSelect.value;
-      const cameraConfig = selectedCamera
-        ? { deviceId: { exact: selectedCamera } }
-        : { facingMode: 'environment' };
+      const selectedCamera = els.cameraSelect.value || cameras[0]?.id;
+      if (!selectedCamera) throw new Error('Không tìm thấy camera. Hãy kiểm tra quyền camera của trình duyệt.');
 
       await scanner.start(
-        cameraConfig,
+        { deviceId: { exact: selectedCamera } },
         {
-          fps: 12,
+          fps: 10,
           qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const width = Math.floor(Math.min(viewfinderWidth * 0.88, 440));
-            const height = Math.floor(Math.min(viewfinderHeight * 0.48, 210));
-            return { width: Math.max(width, 180), height: Math.max(height, 120) };
+            // Vùng quét rộng và cao hơn để nhận được cả QR vuông lẫn mã vạch dài.
+            const width = Math.floor(Math.min(viewfinderWidth * 0.94, 560));
+            const height = Math.floor(Math.min(viewfinderHeight * 0.72, 320));
+            return {
+              width: Math.max(100, Math.min(width, viewfinderWidth)),
+              height: Math.max(100, Math.min(height, viewfinderHeight))
+            };
           },
-          aspectRatio: 1.333,
           disableFlip: false
         },
         (decodedText) => receiveCode(decodedText, 'camera'),
-        () => { /* Bỏ qua lỗi đọc ở từng khung hình; đây là trạng thái bình thường. */ }
+        () => { /* Không đọc được ở một khung hình là bình thường; tiếp tục thử khung tiếp theo. */ }
       );
 
       cameraRunning = true;
@@ -251,10 +270,19 @@
       els.stopCameraBtn.disabled = false;
       els.cameraSelect.disabled = true;
       setSessionStatus('Camera đang hoạt động', 'active');
-      showFeedback('Đang quét. Mã mới sẽ được thêm vào danh sách.', 'neutral');
+      showFeedback('Camera đã bật. Đưa mã vào giữa khung, giữ thẳng và đủ sáng. App nhận QR, Code 128, EAN-13 và các mã phổ biến khác.', 'neutral');
     } catch (error) {
-      console.error(error);
-      showFeedback(error.message || 'Không thể bật camera.', 'error');
+      console.error('Lỗi khởi động máy quét:', error);
+      const message = error?.name === 'NotAllowedError'
+        ? 'Trình duyệt chưa được cấp quyền camera. Nhấn biểu tượng khóa cạnh địa chỉ website → Camera → Cho phép, rồi tải lại trang.'
+        : error?.name === 'NotFoundError'
+          ? 'Thiết bị không tìm thấy camera. Hãy kiểm tra webcam/camera và thử lại.'
+          : error?.name === 'NotReadableError'
+            ? 'Camera đang được ứng dụng khác sử dụng. Hãy đóng ứng dụng Camera/Zoom/Teams rồi thử lại.'
+            : error?.name === 'OverconstrainedError'
+              ? 'Camera không hỗ trợ cấu hình đã chọn. Hãy chọn camera khác.'
+              : (error.message || 'Không thể bật camera.');
+      showFeedback(message, 'error');
       setSessionStatus('Camera chưa bật', 'ready');
       els.startCameraBtn.disabled = false;
     }
